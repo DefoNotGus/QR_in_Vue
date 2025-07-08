@@ -1,0 +1,13 @@
+services:
+  frontend:
+    build:
+      context: ./qr-test-app
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    container_name: qr_vue_frontend
+
+  # backend:
+  #   image: busybox
+  #   command: sleep 9999
+  #   container_name: placeholder_backend
