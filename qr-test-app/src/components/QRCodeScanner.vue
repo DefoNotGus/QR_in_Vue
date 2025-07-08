@@ -1,59 +1,74 @@
 <template>
   <div>
-    <qrcode-stream @decode="onDecode" @init="onInit" />
-
-    <p>Scanned: {{ scannedValue }}</p>
-
-    <p v-if="verifyResult">{{ verifyResult }}</p>
+    <video ref="video" autoplay playsinline width="300" height="200"></video>
+    <canvas ref="canvas" style="display: none;"></canvas>
+    <p v-if="error">{{ error }}</p>
   </div>
 </template>
 
 <script>
-import { QrcodeStream } from 'vue-qrcode-reader';
+import jsQR from "jsqr";
 
 export default {
-  components: { QrcodeStream },
+  name: "QRCodeScanner",
+  emits: ["codeScanned"],
   data() {
     return {
-      scannedValue: '',
-      verifyResult: ''
+      stream: null,
+      error: null,
+      scanning: true,
     };
   },
   methods: {
-    onDecode(decodedText) {
-      this.scannedValue = decodedText;
-      this.verifyWithBackend();
-    },
-    onInit(promise) {
-      promise.catch(error => {
-        console.error('Camera initialization failed', error);
-        if (error.name === 'NotAllowedError') {
-          this.verifyResult = 'Camera access was denied.';
-        } else if (error.name === 'NotFoundError') {
-          this.verifyResult = 'No camera device found.';
-        } else {
-          this.verifyResult = 'Unable to start camera.';
-        }
-      });
-    },
-    async verifyWithBackend() {
+    async startCamera() {
       try {
-        const res = await fetch(`http://localhost:5000/api/items/verify?value=${encodeURIComponent(this.scannedValue)}`);
-        if (!res.ok) throw new Error();
-        this.verifyResult = '✅ Value found in backend.';
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
+        this.$refs.video.srcObject = this.stream;
+        this.scanLoop();
       } catch (err) {
-        this.verifyResult = '❌ Value not found.';
+        this.error = "Camera access denied or not available.";
+        console.error(err);
       }
+    },
+    scanLoop() {
+      const video = this.$refs.video;
+      const canvas = this.$refs.canvas;
+      const context = canvas.getContext("2d");
+
+      const checkFrame = () => {
+        if (!this.scanning || video.readyState !== video.HAVE_ENOUGH_DATA) {
+          requestAnimationFrame(checkFrame);
+          return;
+        }
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+        if (code) {
+          this.$emit("codeScanned", code.data);
+          this.scanning = false; // stop scanning after successful read
+        } else {
+          requestAnimationFrame(checkFrame);
+        }
+      };
+
+      requestAnimationFrame(checkFrame);
+    },
+  },
+  mounted() {
+    this.startCamera();
+  },
+  beforeUnmount() {
+    if (this.stream) {
+      this.stream.getTracks().forEach((track) => track.stop());
     }
-  }
+    this.scanning = false;
+  },
 };
 </script>
-
-<style scoped>
-div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-</style>
