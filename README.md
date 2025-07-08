@@ -8,3 +8,7 @@
 
 ```bash
 docker-compose up --build
+
+
+FE: localhost:8080
+BE: localhost:5000
