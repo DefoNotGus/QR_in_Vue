@@ -8,7 +8,11 @@
 
 ```bash
 docker-compose up --build
-
+```
 
 FE: localhost:8080
 BE: localhost:5000
+
+The backend persists scanned values in `data/items.json`. When running via
+Docker this file is mapped to the `data/` directory next to the
+`docker-compose.yml` so values survive container restarts.
