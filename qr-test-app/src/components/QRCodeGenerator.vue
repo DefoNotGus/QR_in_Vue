@@ -30,7 +30,12 @@ export default {
           body: JSON.stringify({ value: this.valueToEncode })
         });
         if (!res.ok) throw new Error();
-        this.actionResult = '✅ Added to backend.';
+        const data = await res.json();
+        if (data.added) {
+          this.actionResult = '✅ Added to backend.';
+        } else {
+          this.actionResult = 'ℹ️ Value already exists.';
+        }
       } catch (err) {
         this.actionResult = '❌ Failed to add value.';
       }

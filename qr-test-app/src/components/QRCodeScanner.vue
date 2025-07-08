@@ -1,6 +1,6 @@
 <template>
   <div>
-    <qr-scanner @decode="onDecode" />
+    <qrcode-stream @decode="onDecode" @init="onInit" />
 
     <p>Scanned: {{ scannedValue }}</p>
 
@@ -9,7 +9,10 @@
 </template>
 
 <script>
+import { QrcodeStream } from 'vue-qrcode-reader';
+
 export default {
+  components: { QrcodeStream },
   data() {
     return {
       scannedValue: '',
@@ -20,6 +23,18 @@ export default {
     onDecode(decodedText) {
       this.scannedValue = decodedText;
       this.verifyWithBackend();
+    },
+    onInit(promise) {
+      promise.catch(error => {
+        console.error('Camera initialization failed', error);
+        if (error.name === 'NotAllowedError') {
+          this.verifyResult = 'Camera access was denied.';
+        } else if (error.name === 'NotFoundError') {
+          this.verifyResult = 'No camera device found.';
+        } else {
+          this.verifyResult = 'Unable to start camera.';
+        }
+      });
     },
     async verifyWithBackend() {
       try {
