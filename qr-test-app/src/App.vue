@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <header>
-      <h1>QR App</h1>
+    <header class="app-header">
+      <h1>QR Demo</h1>
       <nav>
         <router-link to="/generate">Generate</router-link>
         <router-link to="/scan">Scan</router-link>
@@ -14,10 +14,18 @@
 </template>
 
 <style scoped>
+header.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f0f0f0;
+  padding: 1rem;
+}
 nav {
-  margin: 1rem 0;
+  margin: 0.5rem 0;
 }
 router-link {
   margin-right: 1rem;
+  font-weight: bold;
 }
 </style>
