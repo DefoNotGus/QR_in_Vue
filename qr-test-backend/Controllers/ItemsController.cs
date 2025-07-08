@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.IO;
 
 namespace WebApplication1.Controllers
 {
@@ -22,18 +22,21 @@ namespace WebApplication1.Controllers
                 if (System.IO.File.Exists(ItemsFile))
                 {
                     var json = System.IO.File.ReadAllText(ItemsFile);
-                    Items = JsonSerializer.Deserialize<HashSet<string>>(json) ?? new HashSet<string>();
+                    Items = JsonSerializer.Deserialize<HashSet<string>>(json, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 }
                 else
                 {
-                    Items = new HashSet<string>();
+                    Items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     SaveItems();
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to load items: {ex.Message}");
-                Items = new HashSet<string>();
+                Items = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
 
             Console.WriteLine($"Items file path: {ItemsFile}");
@@ -41,7 +44,7 @@ namespace WebApplication1.Controllers
 
         private static void SaveItems()
         {
-            var json = JsonSerializer.Serialize(Items, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(Items.ToList(), new JsonSerializerOptions { WriteIndented = true });
             System.IO.File.WriteAllText(ItemsFile, json);
         }
 
@@ -51,10 +54,12 @@ namespace WebApplication1.Controllers
             if (string.IsNullOrWhiteSpace(value))
                 return BadRequest("Value is required.");
 
+            string normalized = value.Trim();
+
             bool exists;
             lock (Items)
             {
-                exists = Items.Contains(value);
+                exists = Items.Contains(normalized);
             }
 
             if (exists)
@@ -69,22 +74,23 @@ namespace WebApplication1.Controllers
             if (dto == null || string.IsNullOrWhiteSpace(dto.Value))
                 return BadRequest("Value is required.");
 
+            string normalized = dto.Value.Trim();
             bool added;
             lock (Items)
             {
-                if (Items.Contains(dto.Value))
+                if (Items.Contains(normalized))
                 {
                     added = false;
                 }
                 else
                 {
-                    Items.Add(dto.Value);
+                    Items.Add(normalized);
                     SaveItems();
                     added = true;
                 }
             }
 
-            return Ok(new { added });
+            return Ok(new { added, exists = !added });
         }
 
         public class ItemDto

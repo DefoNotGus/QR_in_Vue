@@ -2,7 +2,7 @@
   <div>
     <video ref="video" autoplay playsinline width="300" height="200"></video>
     <canvas ref="canvas" style="display: none;"></canvas>
-    <p v-if="error">{{ error }}</p>
+    <p v-if="scanResult">{{ scanResult }}</p>
   </div>
 </template>
 
@@ -15,8 +15,8 @@ export default {
   data() {
     return {
       stream: null,
-      error: null,
       scanning: true,
+      scanResult: "",
     };
   },
   methods: {
@@ -28,8 +28,34 @@ export default {
         this.$refs.video.srcObject = this.stream;
         this.scanLoop();
       } catch (err) {
-        this.error = "Camera access denied or not available.";
+        this.scanResult = "Camera access denied or not available.";
         console.error(err);
+      }
+    },
+    async verifyCode(code) {
+      try {
+       const res = await fetch(`http://localhost:5000/api/items/verify?value=${encodeURIComponent(code)}`, {
+        cache: "no-store"
+        });
+
+
+        if (res.status === 200) {
+          const data = await res.json();
+          if (data.exists === true) {
+            this.scanResult = `✅ "${code}" found in database.`;
+          } else {
+            this.scanResult = `❌ "${code}" not found in database.`;
+          }
+        } else if (res.status === 404) {
+          this.scanResult = `❌ "${code}" not found in database.`;
+        } else {
+          this.scanResult = `⚠️ Unexpected status: ${res.status}`;
+        }
+
+        this.$emit("codeScanned", { code, status: res.status });
+      } catch (err) {
+        this.scanResult = "⚠️ Error verifying code.";
+        console.error("Verification error:", err);
       }
     },
     scanLoop() {
@@ -50,9 +76,10 @@ export default {
         const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, canvas.width, canvas.height);
 
-        if (code) {
-          this.$emit("codeScanned", code.data);
-          this.scanning = false; // stop scanning after successful read
+        if (code && code.data) {
+          this.scanning = false;
+          const scannedValue = code.data.trim();
+          this.verifyCode(scannedValue);
         } else {
           requestAnimationFrame(checkFrame);
         }

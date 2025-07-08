@@ -1,24 +1,24 @@
 [
   {
-    "ContainingType": "WebApplication1.Controllers.HardcodedController",
-    "Method": "AddItem",
-    "RelativePath": "api/Hardcoded/add",
+    "ContainingType": "WebApplication1.Controllers.ItemsController",
+    "Method": "Add",
+    "RelativePath": "api/items",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "item",
-        "Type": "WebApplication1.Controllers.Item",
+        "Name": "dto",
+        "Type": "WebApplication1.Controllers.ItemsController\u002BItemDto",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "WebApplication1.Controllers.HardcodedController",
+    "ContainingType": "WebApplication1.Controllers.ItemsController",
     "Method": "Verify",
-    "RelativePath": "api/Hardcoded/verify",
+    "RelativePath": "api/items/verify",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,

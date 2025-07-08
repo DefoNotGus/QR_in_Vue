@@ -26,7 +26,6 @@ C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\stati
 C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\WebApplication1.dll
 C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\refint\WebApplication1.dll
 C:\Users\gus\Documents\Projects\QR_in_Vue\qr-test-backend\obj\Debug\net8.0\WebApplication1.pdb
