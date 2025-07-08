@@ -3,9 +3,8 @@
     <qr-scanner @decode="onDecode" />
 
     <p>Scanned: {{ scannedValue }}</p>
-    <button :disabled="!scannedValue" @click="verifyWithBackend">Verify with Backend</button>
 
-    <p v-if="verifyResult !== null">{{ verifyResult }}</p>
+    <p v-if="verifyResult">{{ verifyResult }}</p>
   </div>
 </template>
 
@@ -14,23 +13,32 @@ export default {
   data() {
     return {
       scannedValue: '',
-      verifyResult: null
+      verifyResult: ''
     };
   },
   methods: {
     onDecode(decodedText) {
       this.scannedValue = decodedText;
+      this.verifyWithBackend();
     },
     async verifyWithBackend() {
       try {
-        const res = await fetch(`http://localhost:5000/api/hardcoded/verify?value=${encodeURIComponent(this.scannedValue)}`);
-        if (!res.ok) throw new Error("Not found");
-        const data = await res.json();
-        this.verifyResult = `✅ Verified: ${data.name} (ID: ${data.id}, Value: ${data.value})`;
+        const res = await fetch(`http://localhost:5000/api/items/verify?value=${encodeURIComponent(this.scannedValue)}`);
+        if (!res.ok) throw new Error();
+        this.verifyResult = '✅ Value found in backend.';
       } catch (err) {
-        this.verifyResult = "❌ Item not found in backend.";
+        this.verifyResult = '❌ Value not found.';
       }
     }
   }
 };
 </script>
+
+<style scoped>
+div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+</style>
